@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Статистика — Finance Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="logo">Личные финансы</div>
+        <a href="#" id="logoutBtn" class="logout">Выход</a>
+    </header>
+
+    <main class="main-content">
+        <h1>Финансовая статистика</h1>
+        <div class="stats-card">
+            <p><strong>Доходы:</strong> <span id="income">0 ₽</span></p>
+            <p><strong>Расходы:</strong> <span id="expense">0 ₽</span></p>
+            <p><strong>Баланс:</strong> <span id="balance">0 ₽</span></p>
+        </div>
+
+        <button class="next-btn" onclick="window.location.href='categories.html'">➡ Следующая страница</button>
+    </main>
+
+    <script>
+        const username = localStorage.getItem('username');
+        if (!username) window.location.href = 'login.html';
+
+        const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        const income = transactions.filter(t => t.type === 'income').reduce((a, t) => a + t.amount, 0);
+        const expense = transactions.filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0);
+
+        document.getElementById('income').textContent = income.toFixed(2) + ' ₽';
+        document.getElementById('expense').textContent = expense.toFixed(2) + ' ₽';
+        document.getElementById('balance').textContent = (income - expense).toFixed(2) + ' ₽';
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('username');
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+
+</html>

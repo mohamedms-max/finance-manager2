@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Категории — Finance Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="logo">Личные финансы</div>
+        <a href="#" id="logoutBtn" class="logout">Выход</a>
+    </header>
+
+    <main class="main-content">
+        <h1>Управление категориями</h1>
+
+        <form id="catForm" class="form-card">
+            <input type="text" id="newCat" placeholder="Введите новую категорию" required>
+            <button type="submit">Добавить</button>
+        </form>
+
+        <ul id="catList"></ul>
+
+        <button class="next-btn" onclick="window.location.href='index.html'">🏠 На главную</button>
+    </main>
+
+    <script>
+        const username = localStorage.getItem('username');
+        if (!username) window.location.href = 'login.html';
+
+        let categories = JSON.parse(localStorage.getItem('categories')) || ['Зарплата', 'Продукты', 'Транспорт'];
+
+        function renderCats() {
+            const list = document.getElementById('catList');
+            list.innerHTML = categories.map((c, i) =>
+                `<li>${c} <button onclick="removeCat(${i})">Удалить</button></li>`).join('');
+        }
+
+        document.getElementById('catForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const newCat = document.getElementById('newCat').value.trim();
+            if (!newCat) return;
+            categories.push(newCat);
+            localStorage.setItem('categories', JSON.stringify(categories));
+            document.getElementById('newCat').value = '';
+            renderCats();
+        });
+
+        function removeCat(i) {
+            categories.splice(i, 1);
+            localStorage.setItem('categories', JSON.stringify(categories));
+            renderCats();
+        }
+
+        renderCats();
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('username');
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Операции — Finance Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="logo">Личные финансы</div>
+        <a href="#" id="logoutBtn" class="logout">Выход</a>
+    </header>
+
+    <main class="main-content">
+        <h1>Список операций</h1>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Тип</th>
+                    <th>Категория</th>
+                    <th>Сумма</th>
+                    <th>Дата</th>
+                    <th>Описание</th>
+                </tr>
+            </thead>
+            <tbody id="transactionList"></tbody>
+        </table>
+
+        <button class="next-btn" onclick="window.location.href='stats.html'">➡ Следующая страница</button>
+    </main>
+
+    <script>
+        const username = localStorage.getItem('username');
+        if (!username) window.location.href = 'login.html';
+
+        const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        const tbody = document.getElementById('transactionList');
+
+        if (transactions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Нет операций</td></tr>';
+        } else {
+            tbody.innerHTML = transactions.map(t => `
+        <tr>
+          <td>${t.type === 'income' ? 'Доход' : 'Расход'}</td>
+          <td>${t.category}</td>
+          <td>${t.amount} ₽</td>
+          <td>${t.date}</td>
+          <td>${t.desc}</td>
+        </tr>`).join('');
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('username');
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+
+</html>
