@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Регистрация — Finance Manager</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="auth-bg">
+    <div class="auth-container">
+        <h1>Создать аккаунт</h1>
+
+        <form id="signupForm">
+            <label for="username">Имя пользователя</label>
+            <input type="text" id="username" placeholder="Введите имя пользователя" required />
+
+            <label for="password">Пароль</label>
+            <input type="password" id="password" placeholder="Введите пароль" required />
+
+            <label for="confirmPassword">Повторите пароль</label>
+            <input type="password" id="confirmPassword" placeholder="Повторите пароль" required />
+
+            <button type="submit">Создать аккаунт</button>
+
+            <p class="small-text">
+                Уже есть аккаунт?
+                <a href="login.html">Войти</a>
+            </p>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const confirmPassword = document.getElementById('confirmPassword').value.trim();
+            if (password !== confirmPassword) {
+                alert('Пароли не совпадают!');
+                return;
+            }
+            try {
+                const res = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Аккаунт успешно создан!');
+                    window.location.href = 'login.html';
+                } else {
+                    alert(data.error || 'Ошибка регистрации');
+                }
+            } catch (err) {
+                alert('Ошибка сети');
+            }
+        });
+    </script>
+</body>
+
+</html>

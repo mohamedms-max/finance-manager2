@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Главная — Finance Manager</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="logo">Личные финансы</div>
+        <a href="#" id="logoutBtn" class="logout">Выход</a>
+    </header>
+
+    <main class="main-content">
+        <h1>Добро пожаловать, <span id="usernameDisplay"></span>!</h1>
+        <p>Начнем управление вашими финансами.</p>
+        <button onclick="window.location.href='add.html'">➡ Перейти к операциям</button>
+    </main>
+
+    <script>
+        async function check() {
+            try {
+                const res = await fetch('/api/me');
+                const d = await res.json();
+                if (!d.logged_in) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                document.getElementById('usernameDisplay').textContent = d.username;
+            } catch (err) {
+                window.location.href = 'login.html';
+            }
+        }
+        check();
+
+        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Операции — Finance Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="logo">Личные финансы</div>
+        <a href="#" id="logoutBtn" class="logout">Выход</a>
+    </header>
+
+    <main class="main-content">
+        <h1>Список операций</h1>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Тип</th>
+                    <th>Категория</th>
+                    <th>Сумма</th>
+                    <th>Дата</th>
+                    <th>Описание</th>
+                </tr>
+            </thead>
+            <tbody id="transactionList"></tbody>
+        </table>
+
+        <button class="next-btn" onclick="window.location.href='stats.html'">➡ Следующая страница</button>
+    </main>
+
+    <script>
+        async function ensureAuth() {
+            try {
+                const r = await fetch('/api/me');
+                const d = await r.json();
+                if (!d.logged_in) window.location.href = 'login.html';
+            } catch {
+                window.location.href = 'login.html';
+            }
+        }
+        ensureAuth();
+
+        async function loadTxs() {
+            const res = await fetch('/api/transactions');
+            if (!res.ok) {
+                document.getElementById('transactionList').innerHTML = '<tr><td colspan="5" style="text-align:center;">Ошибка загрузки</td></tr>';
+                return;
+            }
+            const data = await res.json();
+            const tbody = document.getElementById('transactionList');
+
+            if (!data.transactions || data.transactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Нет операций</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.transactions.map(t => `
+        <tr>
+          <td>${t.type === 'income' ? 'Доход' : 'Расход'}</td>
+          <td>${t.category}</td>
+          <td>${t.amount} ₽</td>
+          <td>${t.date}</td>
+          <td>${(t.desc || '')} <button data-id="${t.id}" class="del">Удалить</button></td>
+        </tr>`).join('');
+
+            document.querySelectorAll('.del').forEach(b => {
+                b.addEventListener('click', async ev => {
+                    const id = ev.target.dataset.id;
+                    const res = await fetch('/api/transactions/' + id, { method: 'DELETE' });
+                    if (res.ok) loadTxs();
+                    else {
+                        const d = await res.json();
+                        alert(d.error || 'Не удалось удалить');
+                    }
+                });
+            });
+        }
+        loadTxs();
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+
+</html>

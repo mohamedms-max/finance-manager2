@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Статистика — Finance Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="logo">Личные финансы</div>
+        <a href="#" id="logoutBtn" class="logout">Выход</a>
+    </header>
+
+    <main class="main-content">
+        <h1>Финансовая статистика</h1>
+        <div class="stats-card">
+            <p><strong>Доходы:</strong> <span id="income">0 ₽</span></p>
+            <p><strong>Расходы:</strong> <span id="expense">0 ₽</span></p>
+            <p><strong>Баланс:</strong> <span id="balance">0 ₽</span></p>
+        </div>
+
+        <button class="next-btn" onclick="window.location.href='categories.html'">➡ Следующая страница</button>
+    </main>
+
+    <script>
+        async function ensureAuth() {
+            try {
+                const r = await fetch('/api/me');
+                const d = await r.json();
+                if (!d.logged_in) window.location.href = 'login.html';
+            } catch {
+                window.location.href = 'login.html';
+            }
+        }
+        ensureAuth();
+
+        async function loadStats() {
+            const res = await fetch('/api/stats');
+            if (!res.ok) {
+                alert('Не удалось загрузить статистику');
+                return;
+            }
+            const d = await res.json();
+            document.getElementById('income').textContent = (d.income || 0) + ' ₽';
+            document.getElementById('expense').textContent = (d.expense || 0) + ' ₽';
+            document.getElementById('balance').textContent = (d.balance || 0) + ' ₽';
+        }
+        loadStats();
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Категории — Finance Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="logo">Личные финансы</div>
+        <a href="#" id="logoutBtn" class="logout">Выход</a>
+    </header>
+
+    <main class="main-content">
+        <h1>Управление категориями</h1>
+
+        <form id="catForm" class="form-card">
+            <input type="text" id="newCat" placeholder="Введите новую категорию" required>
+            <button type="submit">Добавить</button>
+        </form>
+
+        <ul id="catList"></ul>
+
+        <button class="next-btn" onclick="window.location.href='index.html'">🏠 На главную</button>
+    </main>
+
+    <script>
+        async function ensureAuth() {
+            try {
+                const r = await fetch('/api/me');
+                const d = await r.json();
+                if (!d.logged_in) window.location.href = 'login.html';
+            } catch {
+                window.location.href = 'login.html';
+            }
+        }
+        ensureAuth();
+
+        async function loadCats() {
+            const res = await fetch('/api/categories');
+            if (!res.ok) {
+                document.getElementById('catList').innerHTML = '<li>Ошибка загрузки</li>';
+                return;
+            }
+            const d = await res.json();
+            const list = document.getElementById('catList');
+            list.innerHTML = (d.categories || []).map(c =>
+                `<li>${c.name} <button data-id="${c.id}" class="rem">Удалить</button></li>`
+            ).join('');
+
+            document.querySelectorAll('.rem').forEach(b => {
+                b.addEventListener('click', async ev => {
+                    const id = ev.target.dataset.id;
+                    const res = await fetch('/api/categories/' + id, { method: 'DELETE' });
+                    if (res.ok) loadCats();
+                    else {
+                        const dd = await res.json();
+                        alert(dd.error || 'Не удалось удалить');
+                    }
+                });
+            });
+        }
+        loadCats();
+
+        document.getElementById('catForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const name = document.getElementById('newCat').value.trim();
+            if (!name) return;
+            const res = await fetch('/api/categories', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name })
+            });
+            if (res.ok) {
+                document.getElementById('newCat').value = '';
+                loadCats();
+            } else {
+                const d = await res.json();
+                alert(d.error || 'Ошибка добавления');
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+
+</html>
